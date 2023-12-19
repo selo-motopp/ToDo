@@ -1,8 +1,13 @@
 from datetime import datetime,date,time
 from sqlalchemy.orm.session import Session
-from db.models import DbFolder, DbTask, DbUser
+from db.models import DbFolder, DbTask, DbUser, Tag
 from schemas import TaskBase
+<<<<<<< Updated upstream
 from fastapi import  HTTPException, status
+=======
+from fastapi import  HTTPException,status
+from db.database import SessionLocal
+>>>>>>> Stashed changes
 
 #Creating new task. By default it's status is 'New' and folder is 'Main'
 def create_task(db:Session,request:TaskBase,option,current_user):
@@ -82,3 +87,48 @@ def delete_all_tasks(db: Session, current_user):
             db.delete(task)
         db.commit()
         return 'Success'
+
+# Create a new tag
+def create_tag(name: str):
+    db = SessionLocal()
+    new_tag = Tag(name=name)
+    db.add(new_tag)
+    db.commit()
+    db.refresh(new_tag)
+    db.close()
+    return new_tag
+
+# Get all tags
+def get_all_tags():
+    db = SessionLocal()
+    tags = db.query(Tag).all()
+    db.close()
+    return tags
+
+# Get tag by ID
+def get_tag_by_id(tag_id: int):
+    db = SessionLocal()
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    db.close()
+    return tag
+
+# Update tag by ID
+def update_tag(tag_id: int, new_name: str):
+    db = SessionLocal()
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if tag:
+        tag.name = new_name
+        db.commit()
+        db.refresh(tag)
+    db.close()
+    return tag
+
+# Delete tag by ID
+def delete_tag(tag_id: int):
+    db = SessionLocal()
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if tag:
+        db.delete(tag)
+        db.commit()
+    db.close()
+    return tag
