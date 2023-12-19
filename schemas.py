@@ -1,9 +1,12 @@
 from datetime import date, datetime, time
 from pydantic import BaseModel
+from typing import Optional
 
 class TaskBase(BaseModel):
     title:str='Task'
     description:str='Something to do'
+    image_url: Optional[str] = None
+    image_url_type: Optional[str] = None
 
 class TaskDisplay(BaseModel):
     title:str
@@ -14,6 +17,8 @@ class TaskDisplay(BaseModel):
     date:date
     time:time
     folder_id:int 
+    image_url: Optional[str] = None
+    image_url_type: Optional[str] = None
 
     class Config:
       orm_mode = True

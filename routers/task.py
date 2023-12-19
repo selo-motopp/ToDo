@@ -1,5 +1,5 @@
 from datetime import date, datetime, time
-from fastapi import APIRouter, Depends,Query
+from fastapi import APIRouter, Depends,Query, status, UploadFile, File 
 from db.models import DbUser
 from schemas import TaskBase, TaskDisplay
 from sqlalchemy.orm import Session
@@ -7,17 +7,34 @@ from db.database import get_db
 from db import db_tasks
 from typing import List
 from auth.oauth2 import get_current_user, oauth2_scheme
+import random, string, shutil
 
 router=APIRouter( prefix='/task',
                  tags=['task'])
 
+image_url_types = ['absolute', 'relative']
+
 #Create task
-@router.post('/new',response_model=TaskDisplay)
+@router.post('/',response_model=TaskDisplay)
 def create_task(request: TaskBase,
                 db: Session=Depends(get_db),
                 priority: str = Query("Normal", enum=['Low', 'Normal', 'High','Critical']), token: str = Depends(oauth2_scheme),
                 current_user: DbUser = Depends(get_current_user)):
     return db_tasks.create_task(db,request,priority,current_user)
+
+@router.post('/image')
+def upload_image(image: UploadFile = File(...), token: str = Depends(oauth2_scheme)):
+  letters = string.ascii_letters
+  rand_str = ''.join(random.choice(letters) for i in range(6))
+  new = f'_{rand_str}.'
+  filename = new.join(image.filename.rsplit('.', 1))
+  path = f'images/{filename}'
+
+  with open(path, "w+b") as buffer:
+    shutil.copyfileobj(image.file, buffer)
+  
+  return {'filename': path}
+
 
 #Read all tasks
 @router.get('/all',response_model=List[TaskDisplay])

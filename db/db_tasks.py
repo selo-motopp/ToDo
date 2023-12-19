@@ -17,6 +17,14 @@ def create_task(db:Session,request:TaskBase,option,current_user):
         folder_id=1,
         user_id=current_user.id
     )
+
+    if hasattr(request, 'image_url') and request.image_url is not None:
+        new_task.image_url = request.image_url
+    
+    if hasattr(request, 'image_url_type') and request.image_url_type is not None:
+        new_task.image_url_type = request.image_url_type
+
+
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
